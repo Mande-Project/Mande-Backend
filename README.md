@@ -41,3 +41,7 @@ python manage.py runserver
 ```
 
 **To open django application in web browser, go to http://localhost:8000/**
+
+## Testing
+
+**Open examples/requests.sh for examples**
