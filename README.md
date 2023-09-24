@@ -27,6 +27,9 @@ pip install -r requirements.txt
 ```
 
 **Create and migrate schema data in database**
+
+**Note**: If you get errors in the following steps, try deleting all migration files. Database schema is still being updated
+
 ```
 python manage.py makemigrations
 
