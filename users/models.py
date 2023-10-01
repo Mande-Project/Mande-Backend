@@ -30,13 +30,9 @@ class Coordinate(models.Model):
     longitude=models.FloatField()
     address=models.CharField(max_length=255)
 
-class Account(models.Model):
-    number=models.CharField(max_length=255)
-    type=models.CharField(max_length=255)
-
 class CustomUser(AbstractBaseUser):
     #Basic info
-    email=models.EmailField(max_length=254, primary_key=True)
+    email=models.EmailField(max_length=254, unique=True)
     #password=models.CharField(max_length=128,null=True)
     phone=models.CharField(max_length=255,null=True,blank=True)
     username=models.CharField(max_length=255,null=True,blank=True)
@@ -54,7 +50,6 @@ class CustomUser(AbstractBaseUser):
     
     #Extra info
     coordinate=models.OneToOneField(Coordinate,on_delete=models.CASCADE,null=True,blank=True)
-    account=models.OneToOneField(Account,on_delete=models.CASCADE,null=True,blank=True)
     #photo=CloudinaryField('image',null=True,blank=True)
 
     USERNAME_FIELD='email'
@@ -81,5 +76,4 @@ class Worker(models.Model):
     is_available=models.BooleanField(default=False)
     rating=models.FloatField(default=0.0)
     total_rating=models.IntegerField(default=0)
-    
     #document_photo=CloudinaryField('image',null=True,blank=True)
