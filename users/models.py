@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -30,7 +30,7 @@ class Coordinate(models.Model):
     longitude=models.FloatField()
     address=models.CharField(max_length=255)
 
-class CustomUser(AbstractBaseUser):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     #Basic info
     email=models.EmailField(max_length=254, unique=True)
     #password=models.CharField(max_length=128,null=True)
@@ -53,7 +53,7 @@ class CustomUser(AbstractBaseUser):
     #photo=CloudinaryField('image',null=True,blank=True)
 
     USERNAME_FIELD='email'
-    REQUIRED_FIELDS=[]
+    REQUIRED_FIELDS=['phone','username','first_name','last_name']
 
     objects = UserManager()
 
