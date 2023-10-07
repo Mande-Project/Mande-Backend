@@ -1,12 +1,19 @@
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from .models import CustomUser, Customer, Worker
-from .utils import create_user
-from django.http import HttpResponse, JsonResponse
+from djoser.views import UserViewSet
+from rest_framework import permissions
+from .models import *
+from .serializers import CustomUserCreateSerializer, CustomUserSerializer
 
+class CustomUserViewSet(UserViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.AllowAny]
 
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CustomUserCreateSerializer
+        return CustomUserSerializer
+
+""" 
 # Component: customer_register
 # Description: View - Endpoint that creates new users for new Customer instances
 # Author: paul.rojas@correounivalle.edu.co, paulrodrigorojasecl@gmail.com
@@ -146,4 +153,4 @@ def user_logout(request):
             request.user.auth_token.delete()
             return HttpResponse('User was successfully logout')
         except Exception as e:
-            return HttpResponse('Internal error ocurred', status=500)
+            return HttpResponse('Internal error ocurred', status=500) """
