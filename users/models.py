@@ -1,3 +1,5 @@
+import cloudinary
+from cloudinary.models import CloudinaryField
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -38,6 +40,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     username=models.CharField(max_length=255,null=True,blank=True)
     first_name=models.CharField(max_length=255,null=True,blank=True)
     last_name=models.CharField(max_length=255,null=True,blank=True)
+    photo=cloudinary.models.CloudinaryField('media/user/', overwrite=True, resource_type='',null=True,blank=True)
 
     #Permissions
     is_staff=models.BooleanField(default=False)
@@ -50,7 +53,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     #Extra info
     coordinate=models.OneToOneField(Coordinate,on_delete=models.CASCADE,null=True,blank=True)
-    #photo=CloudinaryField('image',null=True,blank=True)
 
     USERNAME_FIELD='email'
     REQUIRED_FIELDS=['phone','username','first_name','last_name']
@@ -69,11 +71,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class Customer(models.Model):
     user=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
 
-    #public_services_photo=CloudinaryField('image',null=True,blank=True)
 
 class Worker(models.Model):
     user=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     is_available=models.BooleanField(default=False)
     rating=models.FloatField(default=0.0)
-    total_rating=models.IntegerField(default=0)
-    #document_photo=CloudinaryField('image',null=True,blank=True)
