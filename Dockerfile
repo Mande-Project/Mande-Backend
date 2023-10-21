@@ -1,6 +1,7 @@
 FROM python:3.10-alpine
 COPY . /mande
 EXPOSE 8000
+ENV PORT=8000
 RUN apk update
 RUN apk add libpq-dev
 RUN apk add build-base
