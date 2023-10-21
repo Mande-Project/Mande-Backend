@@ -48,3 +48,5 @@ python manage.py runserver
 ## Testing
 
 **Open examples/requests.sh for examples**
+
+**To see API documentation, go to http://localhost:8000/api_users/docs/**
