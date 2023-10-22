@@ -9,6 +9,7 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.views import APIView, Response 
 from .models import *
+from .validators import *
 from .serializers import CustomUserCreateSerializer, CustomUserSerializer
 
 class CustomerViewSet(APIView):
