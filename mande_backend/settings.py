@@ -62,7 +62,9 @@ MIDDLEWARE = [
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ORIGINS = [
+    "https://mande-frontend.vercel.app/",
+]
 
 ROOT_URLCONF = 'mande_backend.urls'
 
