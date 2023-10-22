@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import sys
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -95,8 +97,14 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('POSTGRES_HOST'),
         'PORT':os.getenv('POSTGRES_PORT'),
-    }
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+    },
 }
+
+if 'test' in sys.argv:
+    DATABASES['default'] = DATABASES['test']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
