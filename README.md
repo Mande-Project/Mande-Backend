@@ -1,7 +1,7 @@
 # Mande-Backend
 Repository of Mande Backend Project
 
-## Setting up Django environment
+## Setting up Django development environment
 
 **Create virtual environment for Django**
 
@@ -49,7 +49,7 @@ python manage.py runserver
 
 **Open examples/requests.sh for examples**
 
-## Running the dockerized application
+## Run as a dockerized application
 
 **Get in the Dockerfile directory's level and put there the .env file**
 
@@ -64,14 +64,6 @@ docker image build -t mande_backend .
 
 ```
 docker run -dit -p 8000:8000 mande_backend
-```
-
-**The last command will output the container's id**
-
-**Now, run the following the command to start the application inside the running container replacing +container-id+ for the one you got**
-
-```
-docker exec -it +container-id+ sh runserver.sh
 ```
 
 **That's it! The application should response in http://localhost:8000**
