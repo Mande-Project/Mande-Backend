@@ -5,5 +5,6 @@ ENV PORT=8000
 RUN apk update
 RUN apk add libpq-dev
 RUN apk add build-base
-RUN pip3 install -r /mande/requirements.txt
-CMD ["python", "/mande/manage.py", "runserver", "0.0.0.0:8000"]
+WORKDIR /mande
+RUN pip3 install -r requirements.txt
+CMD ["gunicorn", "mande_backend.wsgi", "--bind", "0.0.0.0:8000"]
