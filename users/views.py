@@ -110,6 +110,12 @@ class CustomUserViewSet(UserViewSet):
                 sender=self.__class__, user=user, request=self.request
             )
 
+            try:
+                if (request.data['re_password'] != request.data['password']):
+                    return HttpResponse("re_password is not equal to password", status=400)
+            except:
+               return HttpResponse("re_password value not given", status=400)
+
             image = self.request.FILES.get('image')
             if image:
                 user.photo = image

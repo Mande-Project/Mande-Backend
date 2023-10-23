@@ -22,7 +22,7 @@ def validate_password(password):
 def validate_phone(phone):
     if not phone:
         raise ValidationError("Users must have a phone number")
-    if len(phone) < 10:
+    if len(phone) < 6:
         raise ValidationError("Phone number must have at least 10 digits")
     if not phone.isdigit():
         raise ValidationError("Phone number must have only digits")
@@ -42,6 +42,4 @@ def validate_username(username):
         raise ValidationError("Users must have a username")
     if len(username) < 5:
         raise ValidationError("Username must have at least 5 characters")
-    if not username.isalnum():
-        raise ValidationError("Username must have only letters and numbers")
     return True
