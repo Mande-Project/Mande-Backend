@@ -13,6 +13,8 @@ jobs:
       SECRET_KEY: ${{ secrets.DJANGO_KEY }}
     
     steps:
+    - name: Verify key value
+      run: echo "the key is ${{ secrets.DJANGO_KEY }}"
     - uses: actions/checkout@v3
     - name: Set up Python 3.11
       uses: actions/setup-python@v3
@@ -25,7 +27,7 @@ jobs:
     - name: Coverage report
       run: |
         coverage run manage.py test
-        coeverage report
+        coverage report
     - name: Run Tests
       run: |
         python manage.py test
