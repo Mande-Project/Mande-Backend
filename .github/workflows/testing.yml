@@ -25,7 +25,7 @@ jobs:
     - name: Coverage report
       run: |
         coverage run manage.py test
-        coeverage report
+        coverage report
     - name: Run Tests
       run: |
         python manage.py test
