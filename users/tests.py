@@ -5,23 +5,24 @@ from .models import CustomUser
 class TestUser(TestCase):
     def setUp(self):
         c = Client()
-        c.post('/api_users/users/', {
+        response = c.post('/api_users/users/', {
             "email":"samueltrujillo85@yopmail.com",
             "first_name":"Samuel",
             "last_name":"Trujillo",
-            "username":"Samuel.Trujillo",
-            "phone":"3457323",
+            "username":"SamuelTrujillo10",
+            "phone":"34573232113",
             "role": "customer",
             "password":"MandeSamuel2023",
             "re_password":"MandeSamuel2023"
             })
+
         
         c.post('/api_users/users/', {
             "email":"manuelgalindo85@yopmail.com",
             "first_name":"Manuel",
             "last_name":"Galindo",
-            "username":"Manuel.Galindo",
-            "phone":"2345262",
+            "username":"ManuelGalindo10",
+            "phone":"23421345262",
             "role": "customer",
             "password":"MandeManuel2023",
             "re_password":"MandeManuel2023"
@@ -31,8 +32,8 @@ class TestUser(TestCase):
             "email":"saralopez85@yopmail.com",
             "first_name":"Sara",
             "last_name":"Lopez",
-            "username":"Sara.Lopez",
-            "phone":"2362763",
+            "username":"SaraLopez10",
+            "phone":"23627324563",
             "role": "customer",
             "password":"MandeSara2023",
             "re_password":"MandeSara2023"
@@ -42,8 +43,8 @@ class TestUser(TestCase):
             "email":"santiagopaz85@yopmail.com",
             "first_name":"Santiago",
             "last_name":"Paz",
-            "username":"Santiago.Paz",
-            "phone":"31257324",
+            "username":"SantiagoPaz10",
+            "phone":"312234557324",
             "role": "worker",
             "password":"MandeSantiago2023",
             "re_password":"MandeSantiago2023"
@@ -53,8 +54,8 @@ class TestUser(TestCase):
             "email":"mariavargas85@yopmail.com",
             "first_name":"Maria",
             "last_name":"Vargas",
-            "username":"Maria.Vargas",
-            "phone":"62543523",
+            "username":"MariaVargas10",
+            "phone":"6253114543523",
             "role": "worker",
             "password":"MandeMaria2023",
             "re_password":"MandeMaria2023"
@@ -64,8 +65,8 @@ class TestUser(TestCase):
             "email":"luisangulo85@yopmail.com",
             "first_name":"Luis",
             "last_name":"Angulo",
-            "username":"Luis.Angulo",
-            "phone":"858452",
+            "username":"LuisAngulo10",
+            "phone":"8584111534512",
             "role": "worker",
             "password":"MandeLuis2023",
             "re_password":"MandeLuis2023"
@@ -77,8 +78,8 @@ class TestUser(TestCase):
             "email":"ismaelrgomez85@yopmail.com",
             "first_name":"Ismael",
             "last_name":"Gomez",
-            "username":"Ismael.Gomez",
-            "phone":"6432456",
+            "username":"IsmaelGomez10",
+            "phone":"6436134211456",
             "role": "customer",
             "password":"MandeIsmael2023",
             })
@@ -119,7 +120,7 @@ class TestUser(TestCase):
             "password":"MandeSamuel2023"
         })
 
-        data = {"first_name":"monica","last_name":"ramirez","phone":"623453"}
+        data = {"first_name":"monica","last_name":"ramirez","phone":"54767623453"}
 
         response = c.patch('/api_users/users/me/',data, headers={'Authorization': 'JWT ' + response.data['access']}, content_type='application/json')
         s.refresh_from_db()
@@ -127,7 +128,7 @@ class TestUser(TestCase):
         assert response.status_code == 200
         assert s.first_name == "monica"
         assert s.last_name == "ramirez"
-        assert s.phone == "623453"
+        assert s.phone == "54767623453"
 
     def test_userdeletion(self):
         c = Client()
