@@ -13,7 +13,7 @@ jobs:
       SECRET_KEY: ${{ secrets.DJANGO_KEY }}
     
     steps:
-    - name: Verify secret
+    - name: Verify key value
       run: echo "the key is ${{ secrets.DJANGO_KEY }}"
     - uses: actions/checkout@v3
     - name: Set up Python 3.11
