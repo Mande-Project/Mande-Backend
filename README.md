@@ -49,6 +49,9 @@ python manage.py runserver
 
 **Open examples/requests.sh for examples**
 
+
+**To see API documentation, go to http://localhost:8000/api_users/docs/**
+
 ## Run as a dockerized application
 
 **Get in the Dockerfile directory's level and put there the .env file**

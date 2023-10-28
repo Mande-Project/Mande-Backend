@@ -9,6 +9,7 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from rest_framework.views import APIView, Response 
 from .models import *
+from .validators import *
 from .serializers import CustomUserCreateSerializer, CustomUserSerializer
 
 class CustomerViewSet(APIView):
@@ -108,6 +109,12 @@ class CustomUserViewSet(UserViewSet):
             signals.user_registered.send(
                 sender=self.__class__, user=user, request=self.request
             )
+
+            try:
+                if (request.data['re_password'] != request.data['password']):
+                    return HttpResponse("re_password is not equal to password", status=400)
+            except:
+               return HttpResponse("re_password value not given", status=400)
 
             image = self.request.FILES.get('image')
             if image:
