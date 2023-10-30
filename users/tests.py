@@ -12,7 +12,7 @@ class TestUser(TestCase):
             "username":"SamuelTrujillo10",
             "phone":"34573232113",
             "role": "customer",
-            "password":"MandeSamuel2023",
+            "password":"Mande",
             "re_password":"MandeSamuel2023"
             })
 
