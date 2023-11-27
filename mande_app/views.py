@@ -173,6 +173,15 @@ class ServiceAPI(APIView):
             service.save()
             
             worker = service.worker_job.worker
+
+            # Counting the number of services where the worker has been rated
+            num_services = 0
+            for s in Service.objects.all():
+                if(s.worker_job.worker == worker and s.rating != None):
+                    num_services += 1
+
+            # Calculating the new rating
+            worker.rating = (worker.rating*(num_services-1) + float(self.request.data['rating']))/(num_services)
             worker.is_available = True
             worker.save()
             
