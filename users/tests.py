@@ -3,7 +3,7 @@ from .models import CustomUser
 
 # Create your tests here.
 class TestUser(TestCase):
-    def setUp(self):
+    def setUpTestData():
         c = Client()
         response = c.post('/api_users/users/', {
             "email":"samueltrujillo85@yopmail.com",
