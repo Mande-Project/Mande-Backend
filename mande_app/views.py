@@ -16,7 +16,7 @@ class JobsAPI(APIView):
         serializer = JobSerializer(Job.objects.all(), many=True)
         data = serializer.data
 
-        return Response({"status":"success","data":data})
+        return Response({"status":"success","data":data},status=200)
 
 class Worker_JobAPI(APIView):
     geolocator = Nominatim(user_agent="mandeAPI")
@@ -26,13 +26,13 @@ class Worker_JobAPI(APIView):
         data = []
 
         try:
-            id_user = self.request.data['id']
+            id_user = request.GET.get('id', None)
         except:
             return HttpResponse("No id provided",status=401)
         
         coor1 = CustomUser.objects.get(id=id_user).coordinate
 
-        for w in Worker_Job.object.all():
+        for w in Worker_Job.objects.all():
             distance = None
             
             if w.worker.user.coordinate != None and coor1 != None:
@@ -51,7 +51,7 @@ class Worker_JobAPI(APIView):
                 "description":w.description,
                 "distance":distance,
                 "rating":w.worker.rating,
-                "photo":w.worker.user.photo.url
+                "photo":w.worker.user.photo
             }
 
             data.append(aux)
@@ -69,6 +69,10 @@ class Worker_JobAPI(APIView):
             if not(len(Worker.objects.filter(user=user)) == 1):
                 return HttpResponse("User is not a worker",status=401)
             
+            if len(Worker_Job.objects.filter(worker=Worker.objects.get(user=user),
+                                    job=Job.objects.get(id=self.request.data['job']))) == 1:
+                return HttpResponse("Job is already added",status=401)
+            
             Worker_Job.objects.create(worker=Worker.objects.get(user=user),
                                     job=Job.objects.get(id=self.request.data['job']),
                                     price=self.request.data['price'],
@@ -81,16 +85,23 @@ class Worker_JobAPI(APIView):
             try:
                 id_user = self.request.data['id']
             except:
-                return HttpResponse("No id provided",status=401)
+                return HttpResponse("No id of user provided",status=401)
+            
+            try:
+                id_job = self.request.data['job']
+            except:
+                return HttpResponse("No id of job provided",status=401)
 
             user = CustomUser.objects.get(id=id_user)
             if not(len(Worker.objects.filter(user=user)) == 1):
                 return HttpResponse("User is not a worker",status=401)
             
+            if not(len(Worker_Job.objects.filter(worker=Worker.objects.get(user=user),
+                                    job=Job.objects.get(id=id_job))) == 1):
+                return HttpResponse("Worker is not related to the job",status=401)
+            
             Worker_Job.objects.get(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=self.request.data['job']),
-                                    price=self.request.data['price'],
-                                    description=self.request.data['description']).delete()
+                                    job=Job.objects.get(id=self.request.data['job'])).delete()
             
             return HttpResponse(f"Job deleted from worker user with id {id_user}",status=200)
 
