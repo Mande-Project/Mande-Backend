@@ -33,29 +33,30 @@ class Worker_JobAPI(APIView):
         coor1 = CustomUser.objects.get(id=id_user).coordinate
 
         for w in Worker_Job.objects.all():
-            distance = None
-            
-            if w.worker.user.coordinate != None and coor1 != None:
-                distance = geodesic((coor1.latitude,coor1.longitude),
-                                     (w.worker.user.coordinate.latitude,w.worker.user.coordinate.latitude)).km
+            if(w.active):
+                distance = None
+                
+                if w.worker.user.coordinate != None and coor1 != None:
+                    distance = geodesic((coor1.latitude,coor1.longitude),
+                                        (w.worker.user.coordinate.latitude,w.worker.user.coordinate.latitude)).km
 
-            aux = {
-                "id_worker":w.worker.id,
-                "first_name":w.worker.user.first_name,
-                "last_name":w.worker.user.last_name,
-                "email":w.worker.user.email,
-                "phone":w.worker.user.phone,
-                "worker_available":w.worker.is_available,
-                "job":w.job.name,
-                "price":w.price,
-                "description":w.description,
-                "distance":distance,
-                "rating":w.worker.rating,
-                "photo":w.worker.user.photo
-            }
+                aux = {
+                    "id_worker":w.worker.id,
+                    "first_name":w.worker.user.first_name,
+                    "last_name":w.worker.user.last_name,
+                    "email":w.worker.user.email,
+                    "phone":w.worker.user.phone,
+                    "worker_available":w.worker.is_available,
+                    "job":w.job.name,
+                    "price":w.price,
+                    "description":w.description,
+                    "distance":distance,
+                    "rating":w.worker.rating,
+                    "photo":w.worker.user.photo
+                }
 
-            data.append(aux)
-        
+                data.append(aux)
+
         return Response({"status":"success","data":data})
     
     def post(self,request):
@@ -100,10 +101,12 @@ class Worker_JobAPI(APIView):
                                     job=Job.objects.get(id=id_job))) == 1):
                 return HttpResponse("Worker is not related to the job",status=401)
             
-            Worker_Job.objects.get(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=id_job)).delete()
+            worker_job = Worker_Job.objects.get(worker=Worker.objects.get(user=user),
+                                    job=Job.objects.get(id=id_job))
+            worker_job.active = False
+            worker_job.save()
             
-            return HttpResponse(f"Job deleted from worker user with id {id_user}",status=200)
+            return HttpResponse(f"Job set inactive to worker user with id {id_user}",status=200)
 
 class ServiceAPI(APIView):
     def get(self,request):
@@ -145,6 +148,9 @@ class ServiceAPI(APIView):
 
             if(not worker.is_available):
                 return HttpResponse("Worker is not available",status=401)
+            
+            if(not worker_job.active):
+                return HttpResponse("Job offer by this Worker is not active",status=401)
 
             worker.is_available = False
             worker.save()

@@ -163,16 +163,19 @@ class TestMandeApp(TestCase):
 
     def test_job_deletion(self):
         client = Client()
-        data={"id_user": 5, "id_job": 1}
+    
         client.post('/mande_app/worker_job/', {
             "id_user": 5,
             "id_job": 1,
             "price": 10000,
             "description": "Trabajo de plomeria"
         })
-        
+
+        data={"id_user": 5, "id_job": 1}    
         response = client.delete('/mande_app/worker_job/', data=data,content_type='application/json')
 
+        assert response.content.decode() == "Job set inactive to worker user with id 5"
+        assert Worker_Job.objects.get(worker=Worker.objects.get(user=5),job=Job.objects.get(id=1)).active == False
         assert response.status_code == 200
 
     def test_job_deletion_without_job(self):
@@ -196,7 +199,19 @@ class TestMandeApp(TestCase):
         response = client.get('/mande_app/worker_job/?id_user=1')
 
         assert response.status_code == 200
-        assert len(response.data['data']) == 3      
+        assert len(response.data['data']) == 3   
+
+    def test_job_search_inactive(self):
+        client = APIClient()
+
+        for wj in Worker_Job.objects.all():
+            wj.active = False
+            wj.save()
+
+        response = client.get('/mande_app/worker_job/?id_user=1')
+
+        assert response.status_code == 200
+        assert len(response.data['data']) == 0   
 
     def test_service_creation(self):
         client = Client()
@@ -263,7 +278,6 @@ class TestMandeApp(TestCase):
         assert Service.objects.get(id=1).status == False
         assert Service.objects.get(id=1).rating == 4.2
         assert Worker.objects.get(user=6).is_available == True
-        assert Worker.objects.get(user=6).rating == 4.2
     
     def test_service_end_twice(self):
         client = Client()

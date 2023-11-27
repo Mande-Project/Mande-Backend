@@ -8,6 +8,7 @@ class Job(models.Model):
 class Worker_Job(models.Model):
     worker=models.ForeignKey(Worker,on_delete=models.CASCADE)
     job=models.ForeignKey(Job,on_delete=models.CASCADE)
+    active=models.BooleanField(default=True)
     price=models.FloatField()
     description=models.TextField()
 
