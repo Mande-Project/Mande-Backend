@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from rest_framework.test import APIClient
+from users.models import Worker
 from .models import Job, Service, Worker_Job
 
 # Create your tests here.
@@ -85,6 +86,20 @@ class TestMandeApp(TestCase):
             "re_password":"MandeLuis2023",
             "address":"Calle 52 #3-29, Cali, Valle del Cauca"
             })
+        
+        c.post('/mande_app/worker_job/', {
+            "id_user": 6,
+            "id_job": 2,
+            "price": 20000,
+            "description": "Montaje de lamparas"
+        })
+
+        c.post('/mande_app/worker_job/', {
+            "id_user": 4,
+            "id_job": 6,
+            "price": 15000,
+            "description": "Corte de cesped"
+        })
 
     def test_jobs(self):
         client = Client()   
@@ -98,8 +113,8 @@ class TestMandeApp(TestCase):
     def test_select_job(self):
         client = Client()   
         response = client.post('/mande_app/worker_job/', {
-            "id": 5,
-            "job": 1,
+            "id_user": 5,
+            "id_job": 1,
             "price": 10000,
             "description": "Trabajo de plomeria"
             })
@@ -110,8 +125,8 @@ class TestMandeApp(TestCase):
     def test_client_select_job(self):
         client = Client()   
         response = client.post('/mande_app/worker_job/', {
-            "id": 2,
-            "job": 1,
+            "id_user": 2,
+            "id_job": 1,
             "price": 10000,
             "description": "Trabajo de plomeria"
             })
@@ -122,15 +137,15 @@ class TestMandeApp(TestCase):
     def test_job_twice_added(self):
         client = Client()   
         client.post('/mande_app/worker_job/', {
-            "id": 5,
-            "job": 1,
+            "id_user": 5,
+            "id_job": 1,
             "price": 10000,
             "description": "Trabajo de plomeria"
             })
         
         response = client.post('/mande_app/worker_job/', {
-            "id": 5,
-            "job": 1,
+            "id_user": 5,
+            "id_job": 1,
             "price": 10000,
             "description": "Trabajo de plomeria"
             })
@@ -141,10 +156,10 @@ class TestMandeApp(TestCase):
 
     def test_job_deletion(self):
         client = Client()
-        data={"id": 5, "job": 1}
+        data={"id_user": 5, "id_job": 1}
         client.post('/mande_app/worker_job/', {
-            "id": 5,
-            "job": 1,
+            "id_user": 5,
+            "id_job": 1,
             "price": 10000,
             "description": "Trabajo de plomeria"
         })
@@ -155,7 +170,7 @@ class TestMandeApp(TestCase):
 
     def test_job_deletion_without_job(self):
         client = Client()
-        data={"id": 5}
+        data={"id_user": 5}
         response = client.delete('/mande_app/worker_job/', data=data,content_type='application/json')
 
         assert response.content.decode() == "No id of job provided"
@@ -163,7 +178,7 @@ class TestMandeApp(TestCase):
 
     def test_job_deletion_user_not_related(self):
         client = Client()
-        data={"id": 5, "job": 1}
+        data={"id_user": 5, "id_job": 1}
         response = client.delete('/mande_app/worker_job/', data=data,content_type='application/json')
 
         assert response.content.decode() == "Worker is not related to the job"
@@ -171,30 +186,107 @@ class TestMandeApp(TestCase):
 
     def test_job_search(self):
         client = APIClient()
-        data={"id": 5, "job": 1}
-        client.post('/mande_app/worker_job/', {
-            "id": 5,
-            "job": 1,
-            "price": 10000,
-            "description": "Trabajo de plomeria"
-        })
-
-        client.post('/mande_app/worker_job/', {
-            "id": 6,
-            "job": 2,
-            "price": 20000,
-            "description": "Montaje de lamparas"
-        })
-
-        client.post('/mande_app/worker_job/', {
-            "id": 4,
-            "job": 6,
-            "price": 15000,
-            "description": "Corte de cesped"
-        })
-        
-        data = {"id": 2}
-        response = client.get('/mande_app/worker_job/?id=1')
+        response = client.get('/mande_app/worker_job/?id_user=1')
 
         assert response.status_code == 200
-        assert len(response.data['data']) == 3        
+        assert len(response.data['data']) == 2      
+
+    def test_service_creation(self):
+        client = Client()
+
+        data = {
+            "id_customer": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "cost": 20000,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        response = client.post('/mande_app/services/', data=data)
+
+        assert response.status_code == 200
+        assert response.content.decode() == "Service requested by customer 2 created, job:Electricista"
+        assert len(Service.objects.all()) == 1
+        assert Worker.objects.get(user=6).is_available == False 
+
+    def test_service_creation_worker_not_available(self):
+        client = Client()
+
+        data = {
+            "id_customer": 2,
+            "id_worker_job": 1,
+            "hours": 6,
+            "cost": 20000,
+            "description": "Instalacion de lamparas en jardin"
+        }
+        client.post('/mande_app/services/', data=data)
+
+
+        data = {
+            "id_customer": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "cost": 20000,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        response = client.post('/mande_app/services/', data=data)
+
+        assert response.status_code == 401
+        assert response.content.decode() == "Worker is not available"
+
+    def test_service_end(self):
+        client = Client()
+
+        data = {
+            "id_customer": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "cost": 20000,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        client.post('/mande_app/services/', data=data)
+
+        data = {
+            "id_service": 1,
+            "rating": 4.2
+        }
+
+        response = client.patch('/mande_app/services/', data=data, content_type='application/json')
+
+        assert response.status_code == 200
+        assert response.content.decode() == "Service with id 1 updated"
+        assert Service.objects.get(id=1).status == False
+        assert Service.objects.get(id=1).rating == 4.2
+        assert Worker.objects.get(user=6).is_available == True
+    
+    def test_service_end_twice(self):
+        client = Client()
+
+        data = {
+            "id_customer": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "cost": 20000,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        client.post('/mande_app/services/', data=data)
+
+        data = {
+            "id_service": 1,
+            "rating": 4.2
+        }
+
+        client.patch('/mande_app/services/', data=data, content_type='application/json')
+
+        data = {
+            "id_service": 1,
+            "rating": 4.2
+        }
+
+        response = client.patch('/mande_app/services/', data=data, content_type='application/json')
+
+        assert response.status_code == 401
+        assert response.content.decode() == "Service already ended"

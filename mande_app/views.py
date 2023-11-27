@@ -26,7 +26,7 @@ class Worker_JobAPI(APIView):
         data = []
 
         try:
-            id_user = request.GET.get('id', None)
+            id_user = request.GET.get('id_user', None)
         except:
             return HttpResponse("No id provided",status=401)
         
@@ -40,7 +40,7 @@ class Worker_JobAPI(APIView):
                                      (w.worker.user.coordinate.latitude,w.worker.user.coordinate.latitude)).km
 
             aux = {
-                "id":w.worker.id,
+                "id_worker":w.worker.id,
                 "first_name":w.worker.user.first_name,
                 "last_name":w.worker.user.last_name,
                 "email":w.worker.user.email,
@@ -61,7 +61,7 @@ class Worker_JobAPI(APIView):
     def post(self,request):
         with transaction.atomic():
             try:
-                id_user = self.request.data['id']
+                id_user = self.request.data['id_user']
             except:
                 return HttpResponse("No id provided",status=401)
 
@@ -70,11 +70,11 @@ class Worker_JobAPI(APIView):
                 return HttpResponse("User is not a worker",status=401)
             
             if len(Worker_Job.objects.filter(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=self.request.data['job']))) == 1:
+                                    job=Job.objects.get(id=self.request.data['id_job']))) == 1:
                 return HttpResponse("Job is already added",status=401)
             
             Worker_Job.objects.create(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=self.request.data['job']),
+                                    job=Job.objects.get(id=self.request.data['id_job']),
                                     price=self.request.data['price'],
                                     description=self.request.data['description'])
             
@@ -83,12 +83,12 @@ class Worker_JobAPI(APIView):
     def delete(self,request):
         with transaction.atomic():
             try:
-                id_user = self.request.data['id']
+                id_user = self.request.data['id_user']
             except:
                 return HttpResponse("No id of user provided",status=401)
             
             try:
-                id_job = self.request.data['job']
+                id_job = self.request.data['id_job']
             except:
                 return HttpResponse("No id of job provided",status=401)
 
@@ -101,7 +101,7 @@ class Worker_JobAPI(APIView):
                 return HttpResponse("Worker is not related to the job",status=401)
             
             Worker_Job.objects.get(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=self.request.data['job'])).delete()
+                                    job=Job.objects.get(id=id_job)).delete()
             
             return HttpResponse(f"Job deleted from worker user with id {id_user}",status=200)
 
@@ -110,9 +110,9 @@ class ServiceAPI(APIView):
         data = []
 
         if(request.data['role'] == 'customer'):
-            services = Service.objects.filter(customer=Customer.objects.get(user=request.data['id']))
+            services = Service.objects.filter(customer=Customer.objects.get(user=request.data['id_user']))
         elif(request.data['role'] == 'worker'):
-            services = Service.objects.filter(worker_job=Worker_Job.objects.get(worker=Worker.objects.get(user=request.data['id'])))
+            services = Service.objects.filter(worker_job=Worker_Job.objects.get(worker=Worker.objects.get(user=request.data['id_user'])))
                 
         for s in services:
             aux = {
@@ -139,25 +139,35 @@ class ServiceAPI(APIView):
     
     def post(self,request):
         with transaction.atomic():
-            worker = Worker_Job.objects.get(id=self.request.data['worker_job']).worker
+            id_customer = self.request.data['id_customer']
+            worker_job = Worker_Job.objects.get(id=self.request.data['id_worker_job'])
+            worker = worker_job.worker
+
+            if(not worker.is_available):
+                return HttpResponse("Worker is not available",status=401)
+
             worker.is_available = False
             worker.save()
             
             Service.objects.create(
-                customer=Customer.objects.get(user=CustomUser.objects.get(id=self.request.data['customer'])),
-                worker_job=Worker_Job.objects.get(id=self.request.data['worker_job']),
+                customer=Customer.objects.get(user=CustomUser.objects.get(id=id_customer)),
+                worker_job=worker_job,
                 date=timezone.now(),
                 status=True,
                 hours=self.request.data['hours'],
-                cost=worker.price*self.request.data['hours'],
+                cost=float(worker_job.price)*float(self.request.data['hours']),
                 rating=None,
                 description=self.request.data['description'])
             
-            return HttpResponse(f"Service {self.request.data['name']} added",status=200)
+            return HttpResponse(f"Service requested by customer {id_customer} created, job:{worker_job.job.name}",status=200)
     
     def patch(self,request):
         with transaction.atomic():
-            service = Service.objects.get(id=self.request.data['id'])
+            service = Service.objects.get(id=self.request.data['id_service'])
+
+            if(not service.status):
+                return HttpResponse("Service already ended",status=401)
+
             service.status = False
             service.rating = self.request.data['rating']
             service.save()
@@ -166,9 +176,9 @@ class ServiceAPI(APIView):
             worker.is_available = True
             worker.save()
             
-            return HttpResponse(f"Service {self.request.data['id']} updated",status=200)
+            return HttpResponse(f"Service with id {self.request.data['id_service']} updated",status=200)
 
     def delete(self,request):
-        Service.objects.get(id=self.request.data['id']).delete()
+        Service.objects.get(id=self.request.data['id_service']).delete()
         
-        return HttpResponse(f"Service {self.request.data['id']} deleted",status=200)
+        return HttpResponse(f"Service {self.request.data['id_service']} deleted",status=200)
