@@ -159,7 +159,7 @@ class ServiceAPI(APIView):
                 customer=Customer.objects.get(user=CustomUser.objects.get(id=id_customer)),
                 worker_job=worker_job,
                 date=timezone.now(),
-                status=True,
+                status='A',
                 hours=self.request.data['hours'],
                 cost=float(worker_job.price)*float(self.request.data['hours']),
                 rating=None,
@@ -171,10 +171,10 @@ class ServiceAPI(APIView):
         with transaction.atomic():
             service = Service.objects.get(id=self.request.data['id_service'])
 
-            if(not service.status):
-                return HttpResponse("Service already ended",status=401)
+            if(not service.status == 'A'):
+                return HttpResponse("Service already ended or canceled",status=401)
 
-            service.status = False
+            service.status = 'F'
             service.rating = self.request.data['rating']
             service.save()
             
@@ -183,7 +183,7 @@ class ServiceAPI(APIView):
             # Counting the number of services where the worker has been rated
             num_services = 0
             for s in Service.objects.all():
-                if(s.worker_job.worker == worker and s.rating != None):
+                if(s.worker_job.worker == worker and s.rating != None and s.status == 'F'):
                     num_services += 1
 
             # Calculating the new rating

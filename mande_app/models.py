@@ -13,10 +13,16 @@ class Worker_Job(models.Model):
     description=models.TextField()
 
 class Service(models.Model):
+    STATUS_TYPES = [
+        ('A', 'Active'),
+        ('F', 'Finished'),
+        ('C', 'Canceled'),
+    ]
+    
     customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
     worker_job=models.ForeignKey(Worker_Job,on_delete=models.CASCADE)
     date=models.DateField()
-    status=models.BooleanField(default=False)
+    status=models.CharField(default='A',choices=STATUS_TYPES,max_length=1)
     hours=models.IntegerField()
     cost=models.FloatField()
     rating=models.FloatField(null=True)

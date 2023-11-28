@@ -275,7 +275,7 @@ class TestMandeApp(TestCase):
 
         assert response.status_code == 200
         assert response.content.decode() == "Service with id 1 updated"
-        assert Service.objects.get(id=1).status == False
+        assert Service.objects.get(id=1).status == 'F'
         assert Service.objects.get(id=1).rating == 4.2
         assert Worker.objects.get(user=6).is_available == True
     
@@ -306,7 +306,7 @@ class TestMandeApp(TestCase):
         response = client.patch('/mande_app/services/', data=data, content_type='application/json')
 
         assert response.status_code == 401
-        assert response.content.decode() == "Service already ended"
+        assert response.content.decode() == "Service already ended or canceled"
 
     def test_worker_rating_update(self):
         client = Client()
