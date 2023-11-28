@@ -110,26 +110,38 @@ class Worker_JobAPI(APIView):
 
 class ServiceAPI(APIView):
     def get(self,request):
-        data = []
 
-        if(request.data['role'] == 'customer'):
-            services = Service.objects.filter(customer=Customer.objects.get(user=request.data['id_user']))
-        elif(request.data['role'] == 'worker'):
-            services = Service.objects.filter(worker_job=Worker_Job.objects.get(worker=Worker.objects.get(user=request.data['id_user'])))
+        try:
+            id_user = request.GET.get('id_user', None)
+        except:
+            return HttpResponse("No id provided",status=401)
+
+        data = []
+        aux = Service.objects.all()
+
+        if(Customer.objects.filter(user=id_user).exists()):
+            services = []
+            for s in aux:
+                if(s.customer == Customer.objects.get(user=id_user)):
+                    services.append(s)
+        elif(Worker.objects.filter(user=id_user).exists()):
+            services = []
+            for s in aux:
+                if(s.worker_job.worker == Worker.objects.get(user=id_user)):
+                    services.append(s)
                 
         for s in services:
             aux = {
-                "id":s.id,
-                "customer_name":s.customer.user.first_name,
-                "customer_last_name":s.customer.user.last_name,
-                "customer_email":s.customer.user.email,
-                "customer_phone":s.customer.user.phone,
-                "worker_name":s.worker_job.worker.user.first_name,
-                "worker_last_name":s.worker_job.worker.user.last_name,
-                "worker_email":s.worker_job.worker.user.email,
-                "worker_phone":s.worker_job.worker.user.phone,
+                "id_service":s.id,
+                "c_first_name":s.customer.user.first_name,
+                "c_last_name":s.customer.user.last_name,
+                "c_email":s.customer.user.email,
+                "c_phone":s.customer.user.phone,
+                "w_first_name":s.worker_job.worker.user.first_name,
+                "w_last_name":s.worker_job.worker.user.last_name,
+                "w_email":s.worker_job.worker.user.email,
+                "w_phone":s.worker_job.worker.user.phone,
                 "job":s.worker_job.job.name,
-                "price":s.worker_job.price,
                 "hours":s.hours,
                 "cost":s.cost,
                 "status":s.status,

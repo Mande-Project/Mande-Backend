@@ -322,7 +322,7 @@ class TestMandeApp(TestCase):
         client.post('/mande_app/services/', data=data_s_1)
 
         data_e_1 = {"id_service": 1,"rating": 4.2}
-        response = client.patch('/mande_app/services/', data=data_e_1, content_type='application/json')
+        client.patch('/mande_app/services/', data=data_e_1, content_type='application/json')
 
         assert Worker.objects.get(user=6).rating == 4.2
 
@@ -337,21 +337,70 @@ class TestMandeApp(TestCase):
         client.post('/mande_app/services/', data=data_s_2)
 
         data_e_2 = {"id_service": 2,"rating": 3}
-        response = client.patch('/mande_app/services/', data=data_e_2, content_type='application/json')
+        client.patch('/mande_app/services/', data=data_e_2, content_type='application/json')
 
         assert Worker.objects.get(user=6).rating == (4.2+3)/2
 
         #Service 3
         data_s_3 = {
             "id_customer": 1,
-            "id_worker_job": 2,
+            "id_worker_job": 1,
             "hours": 2,
             "description": "Ciudad Moderna"
         }
 
-        client.post('/mande_app/services/', data=data_s_2)
+        client.post('/mande_app/services/', data=data_s_3)
 
-        data_e_2 = {"id_service": 3,"rating": 5}
-        response = client.patch('/mande_app/services/', data=data_e_2, content_type='application/json')
+        data_e_3 = {"id_service": 3,"rating": 5}
+        client.patch('/mande_app/services/', data=data_e_3, content_type='application/json')
 
         assert Worker.objects.get(user=6).rating == (5+3+4.2)/3
+
+    def test_service_get(self):
+        client = Client()
+
+        #Service 1
+        data_s_1 = {
+            "id_customer": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        client.post('/mande_app/services/', data=data_s_1)
+        client.patch('/mande_app/services/', data={"id_service": 1,"rating": 4.2}, content_type='application/json')
+
+        #Service 2
+        data_s_2 = {
+            "id_customer": 1,
+            "id_worker_job": 1,
+            "hours": 2,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        client.post('/mande_app/services/', data=data_s_2)
+
+        #Service 3
+        data_s_3 = {
+            "id_customer": 1,
+            "id_worker_job": 2,
+            "hours": 2,
+            "description": "N/A"
+        }
+
+        client.post('/mande_app/services/', data=data_s_3)
+
+        client = APIClient()
+        response = client.get('/mande_app/services/?id_user=1',content_type='application/json')
+        assert len(response.data['data']) == 2
+        assert response.status_code == 200
+
+        client = APIClient()
+        response = client.get('/mande_app/services/?id_user=2',content_type='application/json')
+        assert len(response.data['data']) == 1
+        assert response.status_code == 200
+
+        client = APIClient()
+        response = client.get('/mande_app/services/?id_user=6',content_type='application/json')
+        assert len(response.data['data']) == 2
+        assert response.status_code == 200
