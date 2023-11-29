@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'mande_app',
     'coreapi',
     'users',
+    'mande_notifications'
 ]
 
 MIDDLEWARE = [
