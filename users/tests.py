@@ -1,9 +1,10 @@
 from django.test import TestCase, Client
+from rest_framework.test import APIClient
 from .models import CustomUser
 
 # Create your tests here.
 class TestUser(TestCase):
-    def setUp(self):
+    def setUpTestData():
         c = Client()
         response = c.post('/api_users/users/', {
             "email":"samueltrujillo85@yopmail.com",
@@ -126,10 +127,20 @@ class TestUser(TestCase):
         response = c.get('/api_users/customer/')
         assert len(response.data['data']) == 3
 
+    def test_get_customer(self):
+        c = APIClient()
+        response = c.get('/api_users/customer/?id=1')
+        assert response.data['data'][0]['first_name'] == "Samuel"
+
     def test_allworkers(self):
         c = Client()
         response = c.get('/api_users/worker/')
         assert len(response.data['data']) == 3
+
+    def test_get_worker(self):
+        c = APIClient()
+        response = c.get('/api_users/worker/?id=1')
+        assert response.data['data'][0]['first_name'] == "Santiago"
 
     def test_login(self):
         c = Client()
