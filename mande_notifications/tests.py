@@ -3,7 +3,7 @@ from .models import Notification
 from users.models import CustomUser
 
 class TestNotification(TestCase):
-    def setUp(self):
+    def setUpTestData():
         c = Client()
 
         c.post('/api_users/users/', {
