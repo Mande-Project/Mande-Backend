@@ -211,7 +211,32 @@ class TestMandeApp(TestCase):
         response = client.get('/mande_app/worker_job/?id_user=1')
 
         assert response.status_code == 200
-        assert len(response.data['data']) == 0   
+        assert len(response.data['data']) == 0
+
+    def test_job_reactivation(self):
+        client = Client()
+
+        data={"id_user": 6, "id_job": 2}    
+        response = client.delete('/mande_app/worker_job/', data=data,content_type='application/json')
+
+        assert response.content.decode() == "Job set inactive to worker user with id 6"
+        assert Worker_Job.objects.get(worker=Worker.objects.get(user=6),job=Job.objects.get(id=2)).active == False
+        assert response.status_code == 200
+        
+        response = client.post('/mande_app/worker_job/', {
+            "id_user": 6,
+            "id_job": 2,
+            "price": 25000,
+            "description": "Montaje de lamparas grandes"
+        })  
+
+        worker_job = Worker_Job.objects.get(worker=Worker.objects.get(user=6),job=Job.objects.get(id=2))
+
+        assert response.content.decode() == "Job set active to worker user with id 6"
+        assert worker_job.active == True
+        assert worker_job.price == 25000
+        assert worker_job.description == "Montaje de lamparas grandes"
+        assert response.status_code == 200
 
     def test_service_creation(self):
         client = Client()

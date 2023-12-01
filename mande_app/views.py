@@ -65,19 +65,41 @@ class Worker_JobAPI(APIView):
                 id_user = self.request.data['id_user']
             except:
                 return HttpResponse("No id provided",status=401)
+            
+            try:
+                id_job = self.request.data['id_job']
+            except:
+                return HttpResponse("No id of job provided",status=401)
+            
+            try:
+                price = self.request.data['price']
+                description = self.request.data['description']
+            except:
+                return HttpResponse("No price or description provided",status=401)
 
             user = CustomUser.objects.get(id=id_user)
             if not(len(Worker.objects.filter(user=user)) == 1):
                 return HttpResponse("User is not a worker",status=401)
             
             if len(Worker_Job.objects.filter(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=self.request.data['id_job']))) == 1:
-                return HttpResponse("Job is already added",status=401)
+                                    job=Job.objects.get(id=id_job))) == 1:
+                
+                worker_job = Worker_Job.objects.get(worker=Worker.objects.get(user=user),
+                                    job=Job.objects.get(id=id_job))
+
+                if(worker_job.active):    
+                    return HttpResponse("Job is already added",status=401)
+                else:
+                    worker_job.active = True
+                    worker_job.price = price
+                    worker_job.description = description
+                    worker_job.save()
+                    return HttpResponse(f"Job set active to worker user with id {id_user}",status=200)
             
             Worker_Job.objects.create(worker=Worker.objects.get(user=user),
-                                    job=Job.objects.get(id=self.request.data['id_job']),
-                                    price=self.request.data['price'],
-                                    description=self.request.data['description'])
+                                    job=Job.objects.get(id=id_job),
+                                    price=price,
+                                    description=description)
             
             return HttpResponse(f"Job added to worker user with id {id_user}",status=200)
 
