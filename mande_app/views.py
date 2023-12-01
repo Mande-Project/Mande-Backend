@@ -94,7 +94,7 @@ class Worker_JobAPI(APIView):
                     worker_job.price = price
                     worker_job.description = description
                     worker_job.save()
-                    return HttpResponse(f"Job set active to worker user with id {id_user}",status=200)
+                    return HttpResponse(f"Job updated and set active to worker user with id {id_user}",status=200)
             
             Worker_Job.objects.create(worker=Worker.objects.get(user=user),
                                     job=Job.objects.get(id=id_job),

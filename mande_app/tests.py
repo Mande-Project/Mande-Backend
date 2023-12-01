@@ -232,7 +232,7 @@ class TestMandeApp(TestCase):
 
         worker_job = Worker_Job.objects.get(worker=Worker.objects.get(user=6),job=Job.objects.get(id=2))
 
-        assert response.content.decode() == "Job set active to worker user with id 6"
+        assert response.content.decode() == "Job updated and set active to worker user with id 6"
         assert worker_job.active == True
         assert worker_job.price == 25000
         assert worker_job.description == "Montaje de lamparas grandes"
