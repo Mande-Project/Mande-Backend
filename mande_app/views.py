@@ -41,6 +41,7 @@ class Worker_JobAPI(APIView):
                                         (w.worker.user.coordinate.latitude,w.worker.user.coordinate.latitude)).km
 
                 aux = {
+                    "id_worker_job":w.id,
                     "id_worker":w.worker.id,
                     "first_name":w.worker.user.first_name,
                     "last_name":w.worker.user.last_name,
