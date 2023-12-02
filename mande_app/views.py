@@ -169,7 +169,8 @@ class ServiceAPI(APIView):
                 "cost":s.cost,
                 "status":s.status,
                 "date":s.date,
-                "description":s.description
+                "description":s.description,
+                "rating": s.rating
             }
             data.append(aux)
         
