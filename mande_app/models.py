@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import Worker, Customer
+from users.models import Worker, Customer, CustomUser
 
 # Create your models here.
 class Job(models.Model):
@@ -19,7 +19,7 @@ class Service(models.Model):
         ('C', 'Canceled'),
     ]
     
-    customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     worker_job=models.ForeignKey(Worker_Job,on_delete=models.CASCADE)
     date=models.DateField()
     status=models.CharField(default='A',choices=STATUS_TYPES,max_length=1)
