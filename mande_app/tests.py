@@ -242,7 +242,7 @@ class TestMandeApp(TestCase):
         client = Client()
 
         data = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -259,7 +259,7 @@ class TestMandeApp(TestCase):
         client = Client()
 
         data = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 6,
             "description": "Instalacion de lamparas en jardin"
@@ -267,7 +267,7 @@ class TestMandeApp(TestCase):
         client.post('/mande_app/services/', data=data)
 
         data = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -282,7 +282,7 @@ class TestMandeApp(TestCase):
         client = Client()
 
         data = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -307,7 +307,7 @@ class TestMandeApp(TestCase):
         client = Client()
 
         data = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -337,7 +337,7 @@ class TestMandeApp(TestCase):
 
         #Service 1
         data_s_1 = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -352,7 +352,7 @@ class TestMandeApp(TestCase):
 
         #Service 2
         data_s_2 = {
-            "id_customer": 1,
+            "id_user": 1,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -367,7 +367,7 @@ class TestMandeApp(TestCase):
 
         #Service 3
         data_s_3 = {
-            "id_customer": 1,
+            "id_user": 1,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Ciudad Moderna"
@@ -385,7 +385,7 @@ class TestMandeApp(TestCase):
 
         #Service 1
         data_s_1 = {
-            "id_customer": 2,
+            "id_user": 2,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -396,7 +396,7 @@ class TestMandeApp(TestCase):
 
         #Service 2
         data_s_2 = {
-            "id_customer": 1,
+            "id_user": 1,
             "id_worker_job": 1,
             "hours": 2,
             "description": "Instalacion de lamparas en el baño"
@@ -406,7 +406,7 @@ class TestMandeApp(TestCase):
 
         #Service 3
         data_s_3 = {
-            "id_customer": 1,
+            "id_user": 1,
             "id_worker_job": 2,
             "hours": 2,
             "description": "N/A"
@@ -416,6 +416,7 @@ class TestMandeApp(TestCase):
 
         client = APIClient()
         response = client.get('/mande_app/services/?id_user=1',content_type='application/json')
+        
         assert len(response.data['data']) == 2
         assert response.status_code == 200
 
