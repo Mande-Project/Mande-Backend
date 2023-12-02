@@ -245,7 +245,6 @@ class TestMandeApp(TestCase):
             "id_customer": 2,
             "id_worker_job": 1,
             "hours": 2,
-            "cost": 20000,
             "description": "Instalacion de lamparas en el baño"
         }
 
