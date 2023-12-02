@@ -138,6 +138,11 @@ class ServiceAPI(APIView):
             id_user = request.GET.get('id_user', None)
         except:
             return HttpResponse("No id provided",status=401)
+        
+        try:
+            CustomUser.objects.get(id=id_user)
+        except:
+            return HttpResponse("User does not exist",status=401)
 
         data = []
         aux = Service.objects.all()
@@ -145,21 +150,21 @@ class ServiceAPI(APIView):
         if(Customer.objects.filter(user=id_user).exists()):
             services = []
             for s in aux:
-                if(s.customer == Customer.objects.get(user=id_user)):
+                if(s.user.id == int(id_user)):
                     services.append(s)
         elif(Worker.objects.filter(user=id_user).exists()):
             services = []
             for s in aux:
-                if(s.worker_job.worker == Worker.objects.get(user=id_user)):
+                if(s.worker_job.worker.user.id == int(id_user)):
                     services.append(s)
                 
         for s in services:
             aux = {
                 "id_service":s.id,
-                "c_first_name":s.customer.user.first_name,
-                "c_last_name":s.customer.user.last_name,
-                "c_email":s.customer.user.email,
-                "c_phone":s.customer.user.phone,
+                "c_first_name":s.user.first_name,
+                "c_last_name":s.user.last_name,
+                "c_email":s.user.email,
+                "c_phone":s.user.phone,
                 "w_first_name":s.worker_job.worker.user.first_name,
                 "w_last_name":s.worker_job.worker.user.last_name,
                 "w_email":s.worker_job.worker.user.email,
@@ -178,7 +183,7 @@ class ServiceAPI(APIView):
     
     def post(self,request):
         with transaction.atomic():
-            id_customer = self.request.data['id_customer']
+            id_user = self.request.data['id_user']
             worker_job = Worker_Job.objects.get(id=self.request.data['id_worker_job'])
             worker = worker_job.worker
 
@@ -192,7 +197,7 @@ class ServiceAPI(APIView):
             worker.save()
             
             Service.objects.create(
-                customer=Customer.objects.get(user=CustomUser.objects.get(id=id_customer)),
+                user=CustomUser.objects.get(id=id_user),
                 worker_job=worker_job,
                 date=timezone.now(),
                 status='A',
@@ -201,7 +206,7 @@ class ServiceAPI(APIView):
                 rating=None,
                 description=self.request.data['description'])
             
-            return HttpResponse(f"Service requested by customer {id_customer} created, job:{worker_job.job.name}",status=200)
+            return HttpResponse(f"Service requested by customer {id_user} created, job:{worker_job.job.name}",status=200)
     
     def patch(self,request):
         with transaction.atomic():
