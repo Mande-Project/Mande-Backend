@@ -429,3 +429,39 @@ class TestMandeApp(TestCase):
         response = client.get('/mande_app/services/?id_user=6',content_type='application/json')
         assert len(response.data['data']) == 2
         assert response.status_code == 200
+
+    def test_service_cancelation(self):
+        client = Client()
+
+        data_s_1 = {
+            "id_user": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        client.post('/mande_app/services/', data=data_s_1)
+
+        response = client.delete('/mande_app/services/', data={"id_service": 1}, content_type='application/json')
+
+        assert response.status_code == 200
+        assert response.content.decode() == "Service with id 1 was canceled"
+
+    def test_service_cancelation_twice(self):
+        client = Client()
+
+        data_s_1 = {
+            "id_user": 2,
+            "id_worker_job": 1,
+            "hours": 2,
+            "description": "Instalacion de lamparas en el baño"
+        }
+
+        client.post('/mande_app/services/', data=data_s_1)
+
+        client.delete('/mande_app/services/', data={"id_service": 1}, content_type='application/json')
+
+        response = client.delete('/mande_app/services/', data={"id_service": 1}, content_type='application/json')
+
+        assert response.status_code == 401
+        assert response.content.decode() == "Service already ended or canceled"

@@ -1,4 +1,5 @@
 from .models import Worker_Job, Service, Job
+from mande_notifications.models import Notification
 from users.models import CustomUser, Worker, Customer
 from django.db import transaction
 from django.http import HttpResponse
@@ -102,6 +103,12 @@ class Worker_JobAPI(APIView):
                                     price=price,
                                     description=description)
             
+            Notification.objects.create(
+                subject="New job offer",
+                body=f"Hi, you recently added a new job offer for {Job.objects.get(id=id_job).name}. You can cancel it in the app if you want to. If you have any questions, please contact us.",
+                as_customer=False,
+                user=user)
+            
             return HttpResponse(f"Job added to worker user with id {id_user}",status=200)
 
     def delete(self,request):
@@ -129,6 +136,12 @@ class Worker_JobAPI(APIView):
             worker_job.active = False
             worker_job.save()
             
+            Notification.objects.create(
+                subject="Job offer canceled",
+                body=f"Hi, you recently canceled a job offer for {Job.objects.get(id=id_job).name}. You can add it again in the app if you want to. If you have any questions, please contact us.",
+                as_customer=False,
+                user=user)
+
             return HttpResponse(f"Job set inactive to worker user with id {id_user}",status=200)
 
 class ServiceAPI(APIView):
@@ -195,9 +208,11 @@ class ServiceAPI(APIView):
 
             worker.is_available = False
             worker.save()
+
+            user = CustomUser.objects.get(id=id_user)
             
             Service.objects.create(
-                user=CustomUser.objects.get(id=id_user),
+                user=user,
                 worker_job=worker_job,
                 date=timezone.now(),
                 status='A',
@@ -205,6 +220,18 @@ class ServiceAPI(APIView):
                 cost=float(worker_job.price)*float(self.request.data['hours']),
                 rating=None,
                 description=self.request.data['description'])
+            
+            Notification.objects.create(
+                subject="New service request",
+                body=f"Hi, you recently requested a new service for {worker_job.job.name} to the worker {worker.user.first_name}. You can cancel it in the app if you want to. If you have any questions, please contact us.",
+                as_customer=True,
+                user=user)
+            
+            Notification.objects.create(
+                subject="New service request",
+                body=f"Hi, you recently received a new service request for {worker_job.job.name} from {user.first_name}. You can cancel it in the app if you want to. If you have any questions, please contact us.",
+                as_customer=False,
+                user=worker.user)
             
             return HttpResponse(f"Service requested by customer {id_user} created, job:{worker_job.job.name}",status=200)
     
@@ -231,10 +258,44 @@ class ServiceAPI(APIView):
             worker.rating = (worker.rating*(num_services-1) + float(self.request.data['rating']))/(num_services)
             worker.is_available = True
             worker.save()
+
+            Notification.objects.create(
+                subject="Service completed",
+                body=f"The service with id {service.id} was completed. The job related to {service.worker_job.job.name} with the worker {worker.user.first_name} is now finished. You can check more offers in our app. If you have any questions, please contact us.",
+                as_customer=True,
+                user=service.user)
+            
+            Notification.objects.create(
+                subject="Service completed",
+                body=f"The service with id {service.id} was completed. The job related to {service.worker_job.job.name} offered to the customer {service.user.first_name} is now finished, you are now available to offer your services to another customer. You can check more offers in our app. If you have any questions, please contact us.",
+                as_customer=False,
+                user=worker.user)
             
             return HttpResponse(f"Service with id {self.request.data['id_service']} updated",status=200)
 
     def delete(self,request):
-        Service.objects.get(id=self.request.data['id_service']).delete()
+        service = Service.objects.get(id=self.request.data['id_service'])
+
+        if(not service.status == 'A'):
+                return HttpResponse("Service already ended or canceled",status=401)
         
-        return HttpResponse(f"Service {self.request.data['id_service']} deleted",status=200)
+        service.status = 'C'
+        service.save()
+        
+        worker = service.worker_job.worker
+        worker.is_available = True
+        worker.save()
+
+        Notification.objects.create(
+                subject="Service canceled",
+                body=f"The service with id {service.id} was canceled. The job related to {service.worker_job.job.name} with the worker {worker.user.first_name} is nos longer on process. You can check more offers in our app. If you have any questions, please contact us.",
+                as_customer=True,
+                user=service.user)
+        
+        Notification.objects.create(
+                subject="Service canceled",
+                body=f"The service with id {service.id} was canceled. The job related to {service.worker_job.job.name} offered to the customer {service.user.first_name} is nos longer on process, you are now available to offer your services to another customer. You can check more offers in our app. If you have any questions, please contact us.",
+                as_customer=False,
+                user=worker.user)
+
+        return HttpResponse(f"Service with id {self.request.data['id_service']} was canceled",status=200)
