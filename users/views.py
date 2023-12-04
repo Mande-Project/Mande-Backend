@@ -111,7 +111,15 @@ class CustomUserViewSet(UserViewSet):
             serializer = self.get_serializer(data=self.request.data)
             serializer.is_valid(raise_exception=True)
             
-            user = serializer.save(*args, **kwargs)
+            #user = serializer.save(*args, **kwargs)
+            user = CustomUser(
+                username=request.data['username'],
+                email=request.data['email'],
+                phone=request.data['phone'],
+                first_name=request.data['first_name'],
+                last_name=request.data['last_name'],
+                password=make_password(request.data['password']),
+            )
             signals.user_registered.send(
                 sender=self.__class__, user=user, request=self.request
             )
@@ -128,19 +136,18 @@ class CustomUserViewSet(UserViewSet):
                     return HttpResponse("address value error, the address is Null or given address not exists", status=400)
                 Coordinate.objects.create(address=request.data['address'], longitude=location.longitude, latitude=location.latitude)
                 user.coordinate = Coordinate.objects.last()
-                user.save()
             except:
                 return HttpResponse("address value error, the address is Null or given address not exists", status=400)
 
             image = self.request.FILES.get('image')
             if image:
                 user.photo = image
-                user.save()
 
             if request.data['role'] == 'customer':
                 customer = Customer(
                     user = user,
                 )
+                user.save()
                 customer.save()
 
             elif request.data['role'] == 'worker':
@@ -149,6 +156,7 @@ class CustomUserViewSet(UserViewSet):
                     rating = 0,
                     is_available = True,
                 )
+                user.save()
                 worker.save()
 
             context = {"user": user}
