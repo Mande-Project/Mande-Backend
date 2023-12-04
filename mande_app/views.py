@@ -43,7 +43,7 @@ class Worker_JobAPI(APIView):
 
                 aux = {
                     "id_worker_job":w.id,
-                    "id_worker":w.worker.id,
+                    "id_worker":w.worker.user.id,
                     "first_name":w.worker.user.first_name,
                     "last_name":w.worker.user.last_name,
                     "email":w.worker.user.email,
