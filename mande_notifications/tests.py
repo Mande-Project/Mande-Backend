@@ -144,23 +144,18 @@ class TestNotification(TestCase):
             "as_customer":False,
             "user": 2
         })
-        
-        res_1 = c.get('/api_notifications/list_filter_user/1')
 
-        res_1_json = c.get(res_1.url).json()
+        res_1 = c.get('/api_notifications/list_filter_user/1/')
 
-        assert res_1_json[0]['subject'] == "Service completed"
+        assert res_1.data[0]['subject'] == "Service completed"
 
-        assert res_1_json[1]['subject'] == "Other type of notifications"
+        assert res_1.data[1]['subject'] == "Other type of notifications"
 
-        res_2 = c.get('/api_notifications/list_filter_user/2')
+        res_2 = c.get('/api_notifications/list_filter_user/2/')
 
-        res_2_json = c.get(res_2.url).json()
+        assert res_2.data[0]['subject'] == "Completed task"
 
-        assert res_2_json[0]['subject'] == "Completed task"
-
-        assert res_2_json[1]['subject'] == "Other type of notifications"
-
+        assert res_2.data[1]['subject'] == "Other type of notifications"
 
     def test_update_notifications(self):
         c = Client()
