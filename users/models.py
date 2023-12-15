@@ -74,5 +74,5 @@ class Customer(models.Model):
 
 class Worker(models.Model):
     user=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    is_available=models.BooleanField(default=False)
+    is_available=models.BooleanField(default=True)
     rating=models.FloatField(default=0.0)

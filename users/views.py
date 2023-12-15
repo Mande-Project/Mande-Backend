@@ -5,9 +5,11 @@ from djoser import utils, signals
 from djoser.conf import settings
 from djoser.views import UserViewSet
 from djoser.compat import get_user_email
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 from rest_framework import permissions
 from rest_framework.decorators import action
-from rest_framework.views import APIView, Response 
+from rest_framework.views import APIView, Response
 from .models import *
 from .validators import *
 from .serializers import CustomUserCreateSerializer, CustomUserSerializer
@@ -27,7 +29,7 @@ class CustomerViewSet(APIView):
                         'first_name':customer.user.first_name,
                         'last_name':customer.user.last_name,
                         'photo':customer.user.photo,
-                        'coordinate':customer.user.coordinate,
+                        'address':customer.user.coordinate.address,
                     }
                     return Response({"status":"success","data":user})
                 else:
@@ -45,7 +47,7 @@ class CustomerViewSet(APIView):
                         'first_name':customer.user.first_name,
                         'last_name':customer.user.last_name,
                         'photo':customer.user.photo,
-                        'coordinate':customer.user.coordinate,
+                        'address':customer.user.coordinate.address,
                     }
                     queryset.append(user)
                 return Response({"status":"success","data":queryset})
@@ -65,7 +67,7 @@ class WorkerViewSet(APIView):
                         'first_name':worker.user.first_name,
                         'last_name':worker.user.last_name,
                         'photo':worker.user.photo,
-                        'coordinate':worker.user.coordinate,
+                        'address':worker.user.coordinate.address,
                     }
                     return Response({"status":"success","data":user})
                 else:
@@ -83,7 +85,7 @@ class WorkerViewSet(APIView):
                         'first_name':worker.user.first_name,
                         'last_name':worker.user.last_name,
                         'photo':worker.user.photo,
-                        'coordinate':worker.user.coordinate,
+                        'address':worker.user.coordinate.address,
                     }
                     queryset.append(user)
                 return Response({"status":"success","data":queryset})
@@ -103,9 +105,21 @@ class CustomUserViewSet(UserViewSet):
 
     def create(self,request,*args,**kwargs):
         with transaction.atomic():
+            geolocator = Nominatim(user_agent="mandeAPI")
+            geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
+
             serializer = self.get_serializer(data=self.request.data)
             serializer.is_valid(raise_exception=True)
-            user = serializer.save(*args, **kwargs)
+            
+            #user = serializer.save(*args, **kwargs)
+            user = CustomUser(
+                username=request.data['username'],
+                email=request.data['email'],
+                phone=request.data['phone'],
+                first_name=request.data['first_name'],
+                last_name=request.data['last_name'],
+                password=make_password(request.data['password']),
+            )
             signals.user_registered.send(
                 sender=self.__class__, user=user, request=self.request
             )
@@ -115,16 +129,25 @@ class CustomUserViewSet(UserViewSet):
                     return HttpResponse("re_password is not equal to password", status=400)
             except:
                return HttpResponse("re_password value not given", status=400)
+            
+            try:
+                location = geolocator.geocode(request.data['address'])
+                if(location == None):
+                    return HttpResponse("address value error, the address is Null or given address not exists", status=400)
+                Coordinate.objects.create(address=request.data['address'], longitude=location.longitude, latitude=location.latitude)
+                user.coordinate = Coordinate.objects.last()
+            except:
+                return HttpResponse("address value error, the address is Null or given address not exists", status=400)
 
             image = self.request.FILES.get('image')
             if image:
                 user.photo = image
-                user.save()
 
             if request.data['role'] == 'customer':
                 customer = Customer(
                     user = user,
                 )
+                user.save()
                 customer.save()
 
             elif request.data['role'] == 'worker':
@@ -133,6 +156,7 @@ class CustomUserViewSet(UserViewSet):
                     rating = 0,
                     is_available = True,
                 )
+                user.save()
                 worker.save()
 
             context = {"user": user}
@@ -155,6 +179,20 @@ class CustomUserViewSet(UserViewSet):
         if image:
             user.photo = image
             user.save()
+        
+        try: 
+            geolocator = Nominatim(user_agent="mandeAPI")
+            geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
+            
+            location = geolocator.geocode(request.data['address'])
+            if(location == None):
+                return HttpResponse("Error while changing address, the address is Null or given address not exists", status=400)
+            
+            Coordinate.objects.create(address=request.data['address'], longitude=location.longitude, latitude=location.latitude)
+            user.coordinate = Coordinate.objects.last()
+            user.save()
+        except:
+            return HttpResponse("Error while changing address, the address is Null or given address not exists", status=400)
 
         user.password = make_password(request.data['password'])
         user.save()

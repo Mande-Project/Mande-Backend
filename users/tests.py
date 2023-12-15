@@ -1,9 +1,10 @@
 from django.test import TestCase, Client
+from rest_framework.test import APIClient
 from .models import CustomUser
 
 # Create your tests here.
 class TestUser(TestCase):
-    def setUp(self):
+    def setUpTestData():
         c = Client()
         response = c.post('/api_users/users/', {
             "email":"samueltrujillo85@yopmail.com",
@@ -13,7 +14,8 @@ class TestUser(TestCase):
             "phone":"34573232113",
             "role": "customer",
             "password":"MandeSamuel2023",
-            "re_password":"MandeSamuel2023"
+            "re_password":"MandeSamuel2023",
+            "address":"Calle 123 # 45-67, Cali, Colombia"
             })
 
         
@@ -25,7 +27,8 @@ class TestUser(TestCase):
             "phone":"23421345262",
             "role": "customer",
             "password":"MandeManuel2023",
-            "re_password":"MandeManuel2023"
+            "re_password":"MandeManuel2023",
+            "address":"Carrera 60A # 11-15, Cali, Colombia"
             })
         
         c.post('/api_users/users/', {
@@ -36,7 +39,8 @@ class TestUser(TestCase):
             "phone":"23627324563",
             "role": "customer",
             "password":"MandeSara2023",
-            "re_password":"MandeSara2023"
+            "re_password":"MandeSara2023",
+            "address":"Carrera 53A #5B-23, Cali, Colombia"
             })
         
         c.post('/api_users/users/', {
@@ -47,7 +51,8 @@ class TestUser(TestCase):
             "phone":"312234557324",
             "role": "worker",
             "password":"MandeSantiago2023",
-            "re_password":"MandeSantiago2023"
+            "re_password":"MandeSantiago2023",
+            "address":"Carrera 17C #33C-38, Cali, Colombia"
             })
         
         c.post('/api_users/users/', {
@@ -58,7 +63,8 @@ class TestUser(TestCase):
             "phone":"6253114543523",
             "role": "worker",
             "password":"MandeMaria2023",
-            "re_password":"MandeMaria2023"
+            "re_password":"MandeMaria2023",
+            "address":"Cra. 80 #11 A-51, Cali, Colombia"
             })
         
         c.post('/api_users/users/', {
@@ -69,7 +75,8 @@ class TestUser(TestCase):
             "phone":"8584111534512",
             "role": "worker",
             "password":"MandeLuis2023",
-            "re_password":"MandeLuis2023"
+            "re_password":"MandeLuis2023",
+            "address":"Calle 52 #3-29, Cali, Valle del Cauca"
             })
 
     def test_repasswordmissing(self):
@@ -82,19 +89,58 @@ class TestUser(TestCase):
             "phone":"6436134211456",
             "role": "customer",
             "password":"MandeIsmael2023",
+            "address":"Calle 123 # 45-67, Cali, Colombia"
             })
         
         assert response.status_code == 400
+
+    def test_addressmissing(self):
+        c = Client()
+        response = c.post('/api_users/users/', {
+            "email":"ismaelrgomez85@yopmail.com",
+            "first_name":"Ismael",
+            "last_name":"Gomez",
+            "username":"IsmaelGomez10",
+            "phone":"6436134211456",
+            "role": "customer",
+            "password":"MandeIsmael2023",
+            
+        })
+
+        assert response.status_code == 400
+
+    def test_addressnotexists(self):
+        c = Client()
+        response = c.post('/api_users/users/', {
+            "email":"ismaelrgomez85@yopmail.com",
+            "first_name":"Ismael",
+            "last_name":"Gomez",
+            "username":"IsmaelGomez10",
+            "phone":"6436134211456",
+            "role": "customer",
+            "password":"MandeIsmael2023",
+            "address":"Somethin weird here to made an error"
+            })
 
     def test_allcustomers(self):
         c = Client()
         response = c.get('/api_users/customer/')
         assert len(response.data['data']) == 3
 
+    def test_get_customer(self):
+        c = APIClient()
+        response = c.get('/api_users/customer/?id=1')
+        assert response.data['data'][0]['first_name'] == "Samuel"
+
     def test_allworkers(self):
         c = Client()
         response = c.get('/api_users/worker/')
         assert len(response.data['data']) == 3
+
+    def test_get_worker(self):
+        c = APIClient()
+        response = c.get('/api_users/worker/?id=1')
+        assert response.data['data'][0]['first_name'] == "Santiago"
 
     def test_login(self):
         c = Client()
