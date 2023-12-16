@@ -1,13 +1,13 @@
 import cloudinary
 from cloudinary.models import CloudinaryField
 from django.db import models
+from .validators import *
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self,email,password, **extra_fields):
-        if not email:
-            raise ValueError("Users must have an email address")
+        
         email=self.normalize_email(email)
         user = self.model(email=email,**extra_fields)
 
@@ -34,12 +34,12 @@ class Coordinate(models.Model):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     #Basic info
-    email=models.EmailField(max_length=254, unique=True)
+    email=models.EmailField(max_length=254, unique=True, validators=[validate_email])
     #password=models.CharField(max_length=128,null=True)
-    phone=models.CharField(max_length=255,null=True,blank=True)
-    username=models.CharField(max_length=255,null=True,blank=True)
-    first_name=models.CharField(max_length=255,null=True,blank=True)
-    last_name=models.CharField(max_length=255,null=True,blank=True)
+    phone=models.CharField(max_length=255,null=True,blank=True, validators=[validate_phone])
+    username=models.CharField(max_length=255,null=True,blank=True, validators=[validate_username])
+    first_name=models.CharField(max_length=255,null=True,blank=True, validators=[validate_name])
+    last_name=models.CharField(max_length=255,null=True,blank=True, validators=[validate_name])
     photo=cloudinary.models.CloudinaryField('media/user/', overwrite=True, resource_type='',null=True,blank=True)
 
     #Permissions
@@ -74,5 +74,5 @@ class Customer(models.Model):
 
 class Worker(models.Model):
     user=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    is_available=models.BooleanField(default=False)
+    is_available=models.BooleanField(default=True)
     rating=models.FloatField(default=0.0)
