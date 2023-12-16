@@ -32,6 +32,10 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ['*']
 
+DOMAIN = "mande-frontend.vercel.app"
+SITE_NAME = "Mande"
+
+
 # Application definition
 
 INSTALLED_APPS = [
