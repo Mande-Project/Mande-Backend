@@ -32,6 +32,10 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ['*']
 
+DOMAIN = "mande-frontend.vercel.app"
+SITE_NAME = "Mande"
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -125,6 +129,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 
 # Internationalization
